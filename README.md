@@ -35,3 +35,4 @@
 If you want, I can make you a **modular development plan** so you can start with 2–3 features and add more over time. That way you’ll have a working version quickly.
 
 server side password : 9PV3xCqk7gixuow1
+mongodb+srv://maharshibhattisro:<db_password>@padmamangal.qwmk52x.mongodb.net/
