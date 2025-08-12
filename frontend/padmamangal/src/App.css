@@ -330,6 +330,9 @@ body.theme-orbit {
   background: var(--panel);
   border-bottom: 1px solid var(--panel-border);
   backdrop-filter: saturate(1.2) blur(6px);
+  position: sticky;
+  top: 56px;
+  z-index: 5;
 }
 
 .chat-title { font-weight: 700; color: var(--text); }
@@ -630,6 +633,12 @@ body.theme-orbit {
   justify-content: center;
 }
 
+/* Ensure generic modals do NOT blur the whole app */
+.modal-overlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 .call-panel {
   width: min(900px, 95vw);
   background: #ffffff;
@@ -751,4 +760,60 @@ body.theme-orbit {
   .chat-container {
     height: calc(100vh - 60px);
   }
+}
+
+/* Games layout */
+.game-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(600px 300px at 20% 10%, rgba(139,92,246,0.15), transparent 60%),
+    radial-gradient(600px 300px at 80% 0%, rgba(59,130,246,0.12), transparent 60%),
+    linear-gradient(180deg, #0b1020 0%, #111827 100%);
+  color: #e5e7eb;
+}
+.game-hero {
+  padding: 28px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+}
+.game-title { font-size: 28px; font-weight: 800; letter-spacing: .2px; }
+.game-subtitle { color: #93c5fd; margin-top: 6px; }
+.game-content { padding: 16px; }
+
+.uno-card {
+  width: 88px; height: 132px; border-radius: 12px; display: grid; place-items: center;
+  font-weight: 800; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  transform: rotate(-2deg);
+}
+.uno-card.red { background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b); }
+.uno-card.green { background: radial-gradient(circle at 30% 30%, #22c55e, #14532d); }
+.uno-card.yellow { background: radial-gradient(circle at 30% 30%, #f59e0b, #92400e); }
+.uno-card.blue { background: radial-gradient(circle at 30% 30%, #3b82f6, #1e3a8a); }
+
+.ludo-grid { display: grid; grid-template-columns: repeat(15, 28px); gap: 3px; }
+.ludo-cell { width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); }
+.ludo-cell.alt { background: rgba(255,255,255,0.1); }
+
+.game-panel { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; }
+.game-btn { border-radius: 10px; padding: 10px 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); color: #e5e7eb; }
+.game-chip { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); }
+
+/* ---- Overrides to fix footer displacement and collisions ---- */
+/* Keep chat layout grid-based and avoid calc heights from other blocks */
+.chat-container {
+  height: 100vh !important;
+  grid-template-rows: auto 1fr auto;
+}
+.chat-input {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+.chat-shell {
+  padding-top: 0 !important;
+}
+/* Ensure space for bottom navbar only on mobile */
+@media (max-width: 768px) {
+  .chat-container { padding-bottom: 88px !important; }
 }
