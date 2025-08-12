@@ -24,6 +24,9 @@ import AttachmentSheet from "./ui/AttachmentSheet";
 import AudioRecorder from "./ui/AudioRecorder";
 import CallButtons from "./ui/CallButtons";
 import IncomingCallModal from "./ui/IncomingCallModal";
+import PollMessage from "./ui/PollMessage";
+import PollComposer from "./ui/PollComposer";
+import ReactionsBar from "./ui/ReactionsBar";
 import CallOverlay from "./ui/CallOverlay";
 
 const GROUP_ROOM_ID = "padmamangal-group";
@@ -53,6 +56,7 @@ function ChatRoom() {
   const [callOpen, setCallOpen] = useState(false);
   const [callKind, setCallKind] = useState('audio');
   const [incomingCall, setIncomingCall] = useState(null);
+  const [showPollComposer, setShowPollComposer] = useState(false);
 
   const fileInputRef = useRef(null);
   const bottomRef = useRef(null);
@@ -573,6 +577,13 @@ function ChatRoom() {
                 <div className="bubble">
                   <div className="sender-badge" style={{ color: pickColor(m.uid) }}>{displayNameOf(m.uid)}</div>
                   <div>{m.text} {m.editedAt && <small>(edited)</small>}</div>
+                  {m.reactions && (
+                    <div className="reaction-cloud">
+                      {Object.entries(m.reactions).map(([emoji, count]) => (
+                        <span key={emoji}>{emoji} {count}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {m.type === "image" && (
@@ -580,6 +591,13 @@ function ChatRoom() {
                   <div className="sender-badge" style={{ color: pickColor(m.uid) }}>{displayNameOf(m.uid)}</div>
                   <img src={m.url} alt="uploaded" />
                   {m.caption && <div className="caption" style={{ marginTop: 6 }}>{m.caption}</div>}
+                  {m.reactions && (
+                    <div className="reaction-cloud">
+                      {Object.entries(m.reactions).map(([emoji, count]) => (
+                        <span key={emoji}>{emoji} {count}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {m.type === "video" && (
@@ -587,13 +605,30 @@ function ChatRoom() {
                   <div className="sender-badge" style={{ color: pickColor(m.uid) }}>{displayNameOf(m.uid)}</div>
                   <video src={m.url} controls />
                   {m.caption && <div className="caption" style={{ marginTop: 6 }}>{m.caption}</div>}
+                  {m.reactions && (
+                    <div className="reaction-cloud">
+                      {Object.entries(m.reactions).map(([emoji, count]) => (
+                        <span key={emoji}>{emoji} {count}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {m.type === "audio" && (
                 <div className="bubble media">
                   <div className="sender-badge" style={{ color: pickColor(m.uid) }}>{displayNameOf(m.uid)}</div>
                   <audio src={m.url} controls />
+                  {m.reactions && (
+                    <div className="reaction-cloud">
+                      {Object.entries(m.reactions).map(([emoji, count]) => (
+                        <span key={emoji}>{emoji} {count}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              )}
+              {m.type === 'poll' && (
+                <PollMessage db={db} roomId={activeRoom.id} message={m} currentUid={user?.uid} />
               )}
               {m.type === "file" && (
                 <div className="bubble">
@@ -602,6 +637,13 @@ function ChatRoom() {
                     Download {m.fileName || 'file'}
                   </a>
                   {m.caption && <div className="caption" style={{ marginTop: 6 }}>{m.caption}</div>}
+                  {m.reactions && (
+                    <div className="reaction-cloud">
+                      {Object.entries(m.reactions).map(([emoji, count]) => (
+                        <span key={emoji}>{emoji} {count}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {m.type === "location" && (
@@ -620,6 +662,13 @@ function ChatRoom() {
                     />
                     <a href={`https://maps.google.com/?q=${m.latitude},${m.longitude}`} target="_blank" rel="noreferrer" className="map-link">Open in Maps</a>
                   </div>
+                  {m.reactions && (
+                    <div className="reaction-cloud">
+                      {Object.entries(m.reactions).map(([emoji, count]) => (
+                        <span key={emoji}>{emoji} {count}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <div className="meta">{(ts ? ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "")}</div>
@@ -634,6 +683,18 @@ function ChatRoom() {
                   )}
                 </div>
               )}
+              <div style={{ marginTop: 6 }}>
+                <ReactionsBar onReact={async (emoji) => {
+                  try {
+                    const ref = doc(db, 'rooms', activeRoom.id, 'messages', m.id);
+                    const current = m.reactions || {};
+                    const next = { ...current, [emoji]: (current[emoji] || 0) + 1 };
+                    await updateDoc(ref, { reactions: next });
+                  } catch (e) {
+                    // ignore
+                  }
+                }} />
+              </div>
             </div>
           );
         })}
@@ -680,7 +741,22 @@ function ChatRoom() {
           if (kind === 'image') fileInputRef.current?.click();
           else if (kind === 'location') shareLocation();
           else if (kind === 'document') show('Document upload coming soon', { type: 'info' });
-          else if (kind === 'poll') show('Poll coming soon', { type: 'info' });
+          else if (kind === 'poll') setShowPollComposer(true);
+        }}
+      />
+      <PollComposer
+        open={showPollComposer}
+        onClose={() => setShowPollComposer(false)}
+        onCreate={async ({ question, options }) => {
+          const opts = options.map((text, idx) => ({ id: `${idx}`, text }));
+          await addDoc(collection(db, 'rooms', activeRoom.id, 'messages'), {
+            type: 'poll',
+            question,
+            options: opts,
+            uid: user.uid,
+            email: user.email || null,
+            createdAt: serverTimestamp(),
+          });
         }}
       />
       <IncomingCallModal

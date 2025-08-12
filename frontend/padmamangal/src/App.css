@@ -440,6 +440,43 @@ body.theme-orbit {
 
 /* Message caption */
 .bubble .caption { color: var(--muted); font-size: 12px; }
+.bubble.poll { padding: 12px; }
+.poll-options { display: grid; gap: 8px; margin-top: 8px; }
+.poll-option { display: flex; justify-content: space-between; align-items: center; gap: 8px; border: 1px solid var(--panel-border); background: var(--chip); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+.poll-option.selected { outline: 2px solid #6366f1; }
+
+.reactions-bar { display: flex; gap: 6px; padding: 6px; }
+.reaction-btn { border: 1px solid var(--panel-border); background: var(--panel); border-radius: 8px; padding: 4px 6px; cursor: pointer; }
+.reaction-cloud { display: flex; gap: 6px; font-size: 14px; margin-top: 4px; }
+
+/* Show reactions and more button on hover (desktop), always visible on mobile */
+.msg .reactions-bar {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+}
+.msg:hover .reactions-bar {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.msg .msg-actions .msg-more {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .15s ease, visibility .15s ease;
+}
+.msg:hover .msg-actions .msg-more {
+  opacity: 1;
+  visibility: visible;
+}
+@media (max-width: 768px) {
+  .msg .reactions-bar,
+  .msg .msg-actions .msg-more {
+    opacity: 1;
+    visibility: visible;
+  }
+}
 
 /* Sender badge */
 .sender-badge {
@@ -555,6 +592,7 @@ body.theme-orbit {
 }
 
 .composer .flex { width: 100%; }
+.composer textarea.input { min-height: 38px; max-height: 200px; }
 
 .icon-btn {
   width: 38px;
@@ -619,3 +657,98 @@ body.theme-orbit {
 
 .video.remote { height: 55vh; }
 .video.local { height: 20vh; }
+
+/* Add these styles to your main CSS file to integrate with the navbar */
+
+/* Add these styles to your main CSS file to integrate with the navbar */
+
+/* Desktop layout - navbar at top */
+.app-content {
+  padding-top: 64px; /* Space for top navbar */
+}
+
+.chat-shell {
+  padding-top: 0; /* Remove since app-content handles it */
+}
+
+.chat-container {
+  height: calc(100vh - 64px); /* Adjust for navbar height */
+}
+
+/* Mobile layout - navbar at bottom */
+@media (max-width: 768px) {
+  .app-content {
+    padding-top: 0;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom)); /* Space for bottom navbar */
+  }
+
+  .chat-shell {
+    padding-bottom: 0; /* Remove since app-content handles it */
+  }
+
+  .chat-container {
+    height: calc(100vh - 72px - env(safe-area-inset-bottom));
+  }
+
+  /* Adjust chat input to not overlap with navbar */
+  .chat-input {
+    margin-bottom: 0;
+    position: relative;
+    z-index: 50;
+  }
+
+  /* Ensure sidebar doesn't interfere */
+  .sidebar {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  /* Scroll down button adjustment */
+  .scroll-down {
+    bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+
+  /* Toast notifications adjustment */
+  .toast-container {
+    bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  /* Modal overlays adjustment */
+  .modal-overlay {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Additional responsive breakpoints */
+@media (max-width: 480px) {
+  .app-content {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom) + 5px);
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .app-content {
+    padding-top: 64px;
+  }
+}
+
+/* Smooth transitions for layout changes */
+.app-content,
+.chat-shell,
+.chat-container,
+.sidebar {
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure content doesn't jump during orientation changes */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  .app-content {
+    padding-bottom: 60px;
+  }
+
+  .chat-container {
+    height: calc(100vh - 60px);
+  }
+}

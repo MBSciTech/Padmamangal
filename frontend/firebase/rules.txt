@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // User profiles
+    match /users/{uid} {
+      allow read: if isAuthed();
+      allow write: if isAuthed() && request.auth.uid == uid;
+    }
+
+    // Rooms (group + DMs)
+    match /rooms/{roomId} {
+      allow read, write: if isAuthed();
+
+      // Messages inside rooms
+      match /messages/{messageId} {
+
+        // Allow only reactions to be changed without author rights
+        function onlyReactionsChanged() {
+          return request.resource.data.diff(resource.data).changedKeys().hasOnly(['reactions']);
+        }
+
+        allow read, create: if isAuthed();
+
+        // Author can edit; anyone can update reactions only
+        allow update: if isAuthed() && (
+          request.auth.uid == resource.data.uid || onlyReactionsChanged()
+        );
+
+        allow delete: if isAuthed() && request.auth.uid == resource.data.uid;
+
+        // Poll voting
+        match /votes/{uid} {
+          allow read: if isAuthed();
+          allow write: if isAuthed() && request.auth.uid == uid;
+        }
+
+        // Optional: reactions subcollection
+        match /reactions/{uid} {
+          allow read: if isAuthed();
+          allow write: if isAuthed() && request.auth.uid == uid;
+        }
+      }
+
+      // Call signaling
+      match /calls/{callId} {
+        allow read, write: if isAuthed();
+      }
+    }
+  }
+}

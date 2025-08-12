@@ -64,6 +64,7 @@ function Login() {
       const text = "Signed in with Google successfully.";
       setMessage({ type: "success", text });
       alert("Google login successful!");
+      navigate("/chat");
     } catch (error) {
       const text = getAuthErrorMessage(error);
       setMessage({ type: "error", text });
